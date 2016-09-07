@@ -1,0 +1,77 @@
+
+$ban_list = "../data/banned.txt";
+$edit_url = "ban.cgi";
+
+read(STDIN,$string,$ENV{'CONTENT_LENGTH'});
+@pairs = split(/&/,$string);
+foreach $pair (@pairs) {
+	($keyword,$value) = split(/=/,$pair);
+		$value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C",hex($1))/ge;
+		$keyword =~ tr/+/ /;
+		$value =~ tr/+/ /;
+		$input{$keyword} = $value;
+		
+	}
+ print "Content-type: text/html\n\n";
+ 
+open (BAN_LIST, "$ban_list") || print "Can\'t open ban list $ban_list \n"; 
+@ban_list=<BAN_LIST>;
+close BAN_LIST;
+
+&init;
+if    ($ENV{'QUERY_STRING'} =~ /edit/i)   {&edit;}
+elsif ($ENV{'QUERY_STRING'} =~ /save/i)   {&save;}
+else  {&view;}
+&footer;
+
+
+
+sub init{
+       print "<html><head><title>ban-list</title>\n";
+       print "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=windows-1251\">";
+       print "<style> TD.under {font-family: arial, helvetica, sans-serif;font-size: 7pt;font-weight: bold;vertical-align: top;} .underhref {font-size: 7pt;} BIG {font-size: 14pt;font-weight: bold;} /* name */ NOBR B {font-size: 12pt;color: #207025;}  /* ip,counter */ EM {font-size: 9pt;font-style: normal;} /* + for new */ A EM.emplus, EM.emplus {color: #cc0000;font-weight: bold;font-size: 13pt;}  DIV {PADDING-LEFT: 25px;} DD DL{margin-left:-15px;} A:link {text-decoration: none;}  A:visited {text-decoration: none;} A:active {text-decoration: none;} A:hover {text-decoration: none;} </STYLE>";
+       print "<meta http-equiv=\"Pragma\" content=\"no-cache\">";
+       print "</head><body BGCOlOR=\"#f0f0f0\" TEXT=\"#000000\" vlink=\"#000088\">";
+#       print "<center><map name=\"topnav1\"><area shape=rect coords=\"654,8,738,30\" href=\"http://www.rt.mipt.ru/\"></map><map name=\"topnav2\"><area shape=rect coords=\"140,0,229,14\" href=\"http://www.rt.mipt.ru/cgi-bin/people/index.cgi\" alt=\"Пользователи\"><area shape=rect coords=\"233,0,264,14\" href=\"http://www.rt.mipt.ru/net.shtml\" alt=\"Сеть\"><area shape=rect coords=\"269,0,324,14\" href=\"http://www.rt.mipt.ru/res.html\" alt=\"Ресурсы\"><area shape=rect coords=\"327,0,406,14\" href=\"/\" alt=\"Конференция\"><area shape=rect coords=\"409,0,449,14\" href=\"http://www.rt.mipt.ru/study.html\" alt=\"Учеба\"><area shape=rect coords=\"452,0,493,14\" href=\"http://games.mipt.ru/\" alt=\"Игры\"><area shape=rect coords=\"497,0,550,14\" href=\"http://www.rt.mipt.ru/~dean/news/\" alt=\"Деканат\"><area shape=rect coords=\"555,0,604,14\" href=\"http://www.rt.mipt.ru/links.html\" alt=\"Ссылки\"></map><map name=\"botnav1\"><area shape=rect coords=\"29,0,48,18\" href=\"http://www.rt.mipt.ru/\" alt=\"Home\"><area shape=rect coords=\"59,0,82,18\" href=\"http://train.mipt.ru/\"><area shape=rect coords=\"91,0,110,18\" href=\"http://www.rt.mipt.ru/smap.html\"><area shape=rect coords=\"118,0,140,18\" href=\"http://www.rt.mipt.ru/metro.html\"><area shape=rect coords=\"195,3,264,16\" href=\"http://www.rt.mipt.ru/cgi-bin/people/index.cgi\" alt=\"Пользователи\"><area shape=rect coords=\"268,3,293,16\" href=\"http://www.rt.mipt.ru/net.shtml\" alt=\"Сеть\"><area shape=rect coords=\"296,3,340,16\" href=\"http://www.rt.mipt.ru/res.html\" alt=\"Ресурсы\"><area shape=rect coords=\"343,3,403,16\" href=\"/\" alt=\"Конференция\"><area shape=rect coords=\"407,3,437,16\" href=\"http://www.rt.mipt.ru/study.html\" alt=\"Учеба\"><area shape=rect coords=\"441,3,472,16\" href=\"http://games.mipt.ru/\" alt=\"Игры\"><area shape=rect coords=\"476,3,517,16\" href=\"http://www.rt.mipt.ru/~dean/news/\" alt=\"Деканат\"><area shape=rect coords=\"520,3,560,16\" href=\"http://www.rt.mipt.ru/links.html\" alt=\"Ссылки\"><area shape=rect coords=\"626,0,719,18\" href=\"mailto:bbsadmin\@rt.mipt.ru\"></map>";
+#       print "<img src=\"/images/1board.gif\" border=0 width=750 height=35 usemap=#topnav1><br><img src=\"/images/subline.gif\" border=0 width=750 height=20 usemap=#topnav2><br>";
+#       print "<table BORDER=0 CELLSPACING=0 CELLPADDING=1 BGCOLOR=\"#dfdfdf\"><tr><td ALIGN=CENTER><small>[ <a HREF=\"/?form\">Новое сообщение</a> | <a HREF=\"/?search=form\">Поиск</a> | <a HREF=\"/?configure=form\">Настройки</a> | <a HREF=\"/?resetnew\">Убрать все плюсы</a> | <a HREF=\"/?register=form\">Ваш профайл</a> | <a HREF=\"/?userlist\">Пользователи</a> | <a HREF=\"/?help\">Справка</a> | <a HREF=\"/rules.html\" target=_blank>Правила</a> | <a HREF=\"/?persmsg\">Приват</a> | <a HREF=\"/?globann=form\">Добавить анонс</a> ]</small></td></tr></table><br><br><br></center>";
+       
+       
+}
+
+sub footer{
+    print "<center><img src=\"/images/botnav.gif\" border=0 width=750 height=23 usemap=#botnav1><br><table width=750 border=0><tr><td align=left class=under>Сервер создан студентами ФРТК.</td>";
+    print "<td align=center class=under>PT Форум создан  на движке <a STYLE=\"text-decoration:underline;\" href=\"http://2ka.mipt.ru/~www/\" TARGET=\"_blank\">WWWConf 2.0 PRE BETA2</a>, поддерживается и модерируется группой <a STYLE=\"text-decoration:underline;\" href=\"http://board.rt.mipt.ru/authors.html\">энтузиастов</a>.</td>";
+    print "<td align=right class=under>Apache inside!</td></tr></table></center>";
+    print "</body></html>\n";
+}
+
+
+sub view{
+    print "<center><H4>КОГДА БАНИТЕ ПИШИТЕ ДАТУ !!!</H4><table width=\"80%\"><tr><td align=\"center\">";
+    print "<form action=\"$edit_url?save\" method=post>\n";
+    if ( $input{action} == 'edit' ){
+        print "<textarea name=banlist rows=30 cols=70 wrap=soft>\n";
+	foreach $line (@ban_list){
+	print $line;
+	}
+    print "</textarea><br><INPUT type=submit name=submit value=Save> \n";
+    print "<br></td></tr></table></center> \n";
+    }
+
+}
+
+sub save{
+    if ($input{banlist}){
+	open (BAN_LIST, ">$ban_list") || print "Can\'t open ban list $ban_list \n";
+	print BAN_LIST $input{banlist};
+	close BAN_LIST;
+	print "<center><table width=\"80%\"><tr><td>";
+	print "<pre> $input{banlist} </pre><br><h2>Saved....</h2></td></tr>";
+	print "<tr><td align=center><form action=\"$edit_url\" method=post>\n";
+	print "<br><INPUT type=submit name=submit value=Edit></td></tr>";
+	print "</table></center> \n";
+    }else{
+	print "<h2><center>sent list is empty...mmm...mistake?!... not saved...</center><h2>";
+    }
+}
