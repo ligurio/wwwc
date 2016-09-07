@@ -1,2 +1,3 @@
-# wwwc
-Board engine written in C++
+# wwwconf
+
+A conference written in C++ is very quick and powerful. Written without using any standard database management system for the performance improvement.
